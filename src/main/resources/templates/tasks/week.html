@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Week — Task Planner</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="topbar">
+    <a class="brand" href="/tasks/week">Task Planner</a>
+    <div class="nav-links">
+        <a href="/tasks/week" class="active">Week</a>
+        <a href="/tasks">List</a>
+        <a href="/tasks/new" class="primary">+ New Task</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="week-nav">
+        <a class="btn" th:href="@{/tasks/week(start=${prevWeek})}">← Previous week</a>
+        <div class="week-range">
+            <span th:text="${#temporals.format(weekStart, 'd MMMM')}"></span>
+            —
+            <span th:text="${#temporals.format(weekEnd, 'd MMMM yyyy')}"></span>
+        </div>
+        <a class="btn" th:href="@{/tasks/week(start=${nextWeek})}">Next week →</a>
+    </div>
+
+    <p th:if="${!weekStart.equals(currentWeekStart)}" style="margin-top:-8px;">
+        <a th:href="@{/tasks/week}">↺ Back to current week</a>
+    </p>
+
+    <div class="week-grid">
+        <div class="day-col" th:each="date, iter : ${weekDates}"
+             th:classappend="${date.equals(today) ? 'today' : ''}">
+            <div class="day-head">
+                <div class="day-name" th:text="${weekDayNames[iter.index]}"></div>
+                <div class="day-date" th:text="${#temporals.format(date, 'd MMMM')}"></div>
+            </div>
+            <div class="day-body">
+                <div class="day-empty" th:if="${#lists.isEmpty(tasksByDate.get(date))}">No tasks</div>
+                <div class="task-card"
+                     th:each="task : ${tasksByDate.get(date)}"
+                     th:classappend="${'p' + task.priority + (task.completed ? ' completed' : '')}">
+                    <p class="task-card-title" th:text="${task.title}"></p>
+                    <p th:if="${task.description != null and !task.description.isEmpty()}"
+                       style="margin:0;color:var(--text-muted);word-break:break-word;"
+                       th:text="${task.description}"></p>
+                    <div class="task-card-actions">
+                        <a class="icon-btn" th:href="@{/tasks/{id}/edit(id=${task.id})}" title="Edit">Edit</a>
+                        <form th:if="${!task.completed}" th:action="@{/tasks/{id}/complete(id=${task.id})}"
+                              method="post" style="display:inline">
+                            <button type="submit" class="icon-btn" title="Done">Done</button>
+                        </form>
+                        <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" style="display:inline">
+                            <button type="submit" class="icon-btn" title="Delete"
+                                    onclick="return confirm('Delete this task?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

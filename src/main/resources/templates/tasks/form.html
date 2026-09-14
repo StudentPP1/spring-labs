@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${task.id} != null ? 'Edit Task' : 'New Task'">Task</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="topbar">
+    <a class="brand" href="/tasks/week">Task Planner</a>
+    <div class="nav-links">
+        <a href="/tasks/week">Week</a>
+        <a href="/tasks">List</a>
+        <a href="/tasks/new" class="active">+ New Task</a>
+    </div>
+</div>
+
+<div class="container">
+    <h1 th:text="${task.id} != null ? 'Edit Task' : 'New Task'"></h1>
+
+    <div class="form-card">
+        <form th:action="${task.id} != null ? @{/tasks/{id}(id=${task.id})} : @{/tasks}"
+              th:object="${task}" method="post">
+
+            <input type="hidden" th:field="*{completed}"/>
+
+            <div class="field" th:classappend="${#fields.hasErrors('title')} ? 'has-error' : ''">
+                <label>Title</label>
+                <input type="text" th:field="*{title}"/>
+                <span class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+            </div>
+
+            <div class="field">
+                <label>Description</label>
+                <textarea th:field="*{description}"></textarea>
+            </div>
+
+            <div class="field" th:classappend="${#fields.hasErrors('date')} ? 'has-error' : ''">
+                <label>Date</label>
+                <input type="date" th:field="*{date}"/>
+                <span class="field-error" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></span>
+            </div>
+
+            <div class="field" th:classappend="${#fields.hasErrors('priority')} ? 'has-error' : ''">
+                <label>Priority</label>
+                <select th:field="*{priority}">
+                    <option value="1">Low</option>
+                    <option value="2">Medium</option>
+                    <option value="3">High</option>
+                </select>
+                <span class="field-error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"></span>
+            </div>
+
+            <div class="field">
+                <label>Repeat</label>
+                <select th:field="*{recursiveType}">
+                    <option th:each="type : ${recursiveTypes}"
+                            th:value="${type.value}"
+                            th:text="${type.name()}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a class="btn btn-ghost" href="/tasks">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
