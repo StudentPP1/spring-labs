@@ -1,6 +1,7 @@
 package com.example.lab2.task;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,11 +23,8 @@ public class TaskController {
     private static final List<String> WEEK_DAY_NAMES = List.of(
             "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
 
-    private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
+    @Autowired
+    private TaskService taskService;
 
     @GetMapping("/")
     public String home() {

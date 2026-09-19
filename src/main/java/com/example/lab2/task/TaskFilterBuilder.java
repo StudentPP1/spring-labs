@@ -1,5 +1,6 @@
 package com.example.lab2.task;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +12,12 @@ import java.util.function.Predicate;
 @Component
 @Scope("prototype")
 public class TaskFilterBuilder {
-    private final TaskRepository repository;
+    private TaskRepository repository;
     private final List<Predicate<Task>> conditions = new ArrayList<>();
 
-    public TaskFilterBuilder(TaskRepository repository) {
-        this.repository = repository;
+    @Autowired
+    public void setRepository(TaskRepository taskRepository) {
+        this.repository = taskRepository;
     }
 
     public TaskFilterBuilder byPriority(int priority) {

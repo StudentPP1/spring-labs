@@ -6,7 +6,6 @@ import com.example.lab2.annotation.Table;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +21,8 @@ public abstract class CrudRepository<EntityType, IdType> implements Repository<E
     private String DELETE_QUERY;
     private String UPDATE_QUERY;
 
-    protected CrudRepository(Class<EntityType> entityType, DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    protected CrudRepository(Class<EntityType> entityType, JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
         Table tableAnnotation = entityType.getAnnotation(Table.class);
         this.tableName = tableAnnotation.name();
         Objects.requireNonNull(this.tableName);
