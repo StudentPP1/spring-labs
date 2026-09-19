@@ -18,6 +18,8 @@
 
 <div class="container">
     <h1>Task List</h1>
+    <p class="task-count" th:unless="${#lists.isEmpty(tasks)}"
+       th:text="|${totalCount} tasks · ${completedCount} completed|"></p>
 
     <form class="toolbar" method="get" action="/tasks">
         <div class="pill-group">
@@ -45,7 +47,8 @@
     </div>
 
     <div class="task-list" th:unless="${#lists.isEmpty(tasks)}">
-        <div class="task-row" th:each="task : ${tasks}" th:classappend="${task.completed ? 'completed' : ''}">
+        <div class="task-row" th:each="task : ${tasks}"
+             th:classappend="${task.completed ? 'completed' : (task.date.isBefore(today) ? 'overdue' : '')}">
             <div class="task-main">
                 <p class="task-title" th:text="${task.title}"></p>
                 <p class="task-desc" th:if="${task.description != null and !task.description.isEmpty()}" th:text="${task.description}"></p>
@@ -56,6 +59,8 @@
                 <th:block th:case="2">Medium</th:block>
                 <th:block th:case="*">Low</th:block>
             </span>
+            <span class="badge badge-recurring" th:if="${task.recursiveType != -1}"
+                  th:text="${task.recursiveType == 1 ? '🔁 Daily' : '🔁 Weekly'}"></span>
             <span class="badge badge-done" th:if="${task.completed}">Completed</span>
             <div class="task-actions">
                 <a class="btn" th:href="@{/tasks/{id}/edit(id=${task.id})}">Edit</a>

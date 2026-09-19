@@ -43,7 +43,11 @@
                 <div class="task-card"
                      th:each="task : ${tasksByDate.get(date)}"
                      th:classappend="${'p' + task.priority + (task.completed ? ' completed' : '')}">
-                    <p class="task-card-title" th:text="${task.title}"></p>
+                    <p class="task-card-title">
+                        <span th:if="${task.recursiveType != -1}"
+                              th:title="${task.recursiveType == 1 ? 'Repeats daily' : 'Repeats weekly'}">🔁</span>
+                        <span th:text="${task.title}"></span>
+                    </p>
                     <p th:if="${task.description != null and !task.description.isEmpty()}"
                        style="margin:0;color:var(--text-muted);word-break:break-word;"
                        th:text="${task.description}"></p>
