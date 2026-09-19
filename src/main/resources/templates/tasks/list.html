@@ -51,9 +51,11 @@
                 <p class="task-desc" th:if="${task.description != null and !task.description.isEmpty()}" th:text="${task.description}"></p>
             </div>
             <div class="task-date" th:text="${#temporals.format(task.date, 'd MMMM yyyy')}"></div>
-            <span class="badge"
-                  th:classappend="${'badge-priority-' + task.priority}"
-                  th:text="${task.priority == 3 ? 'High' : (task.priority == 2 ? 'Medium' : 'Low')}"></span>
+            <span class="badge" th:classappend="${'badge-priority-' + task.priority}" th:switch="${task.priority}">
+                <th:block th:case="3">High</th:block>
+                <th:block th:case="2">Medium</th:block>
+                <th:block th:case="*">Low</th:block>
+            </span>
             <span class="badge badge-done" th:if="${task.completed}">Completed</span>
             <div class="task-actions">
                 <a class="btn" th:href="@{/tasks/{id}/edit(id=${task.id})}">Edit</a>
