@@ -46,6 +46,9 @@ public class TaskController {
         model.addAttribute("sort", sort);
         model.addAttribute("status", status);
         model.addAttribute("priority", priority);
+        model.addAttribute("today", LocalDate.now());
+        model.addAttribute("totalCount", tasks.size());
+        model.addAttribute("completedCount", tasks.stream().filter(Task::isCompleted).count());
         return "tasks/list";
     }
 
