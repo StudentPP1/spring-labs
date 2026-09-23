@@ -78,4 +78,24 @@ public class TaskRestController {
                 .status(HttpStatus.CREATED)
                 .build();
     }
+
+    @PutMapping(value = "/{id}", consumes = "application/json")
+    public ResponseEntity<TaskDto> update(@PathVariable Long id, @Valid @RequestBody TaskRequest request) {
+        taskService.getTaskById(id);
+
+        Task task = request.toTask();
+        task.setId(id);
+
+        taskService.updateTask(task);
+
+        return ResponseEntity.ok(TaskDto.from(task));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        taskService.getTaskById(id);
+        taskService.deleteTask(id);
+
+        return ResponseEntity.noContent().build();
+    }
 }
