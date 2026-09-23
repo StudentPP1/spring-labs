@@ -1,9 +1,10 @@
 package com.example.lab2.task;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Comparator;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -19,5 +20,50 @@ public class TaskRestController {
     public TaskDto getById(@PathVariable Long id) {
         Task task = taskService.getTaskById(id);
         return TaskDto.from(task);
+    }
+
+    @GetMapping
+    public ResponseEntity<TaskPageDto> getAll(
+            @RequestParam(required = false) Integer priority,
+            @RequestParam(required = false) Boolean completed,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        if (page < 0
+                || size < 1
+                || size > 100
+                || (priority != null
+                && (priority < 1 || priority > 3))) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Task> tasks = taskService
+                .filterTasks(priority, completed, null)
+                .stream()
+                .sorted(Comparator.comparing(Task::getId))
+                .toList();
+
+        int totalElements = tasks.size();
+        long offset = (long) page * size;
+
+        int fromIndex = offset >= totalElements
+                ? totalElements
+                : (int) offset;
+
+        int toIndex = Math.min(fromIndex + size, totalElements);
+
+        List<TaskDto> content = tasks
+                .subList(fromIndex, toIndex)
+                .stream()
+                .map(TaskDto::from)
+                .toList();
+
+        int totalPages = totalElements == 0
+                ? 0
+                : (totalElements + size - 1) / size;
+
+        TaskPageDto result = new TaskPageDto(content,page, size, totalElements, totalPages);
+
+        return ResponseEntity.ok(result);
     }
 }
