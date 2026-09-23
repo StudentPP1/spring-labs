@@ -16,7 +16,8 @@ public class TaskRestController {
     }
 
     @GetMapping("/{id}")
-    public Task getById(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    public TaskDto getById(@PathVariable Long id) {
+        Task task = taskService.getTaskById(id);
+        return TaskDto.from(task);
     }
 }
