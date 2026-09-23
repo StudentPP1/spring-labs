@@ -1,5 +1,7 @@
 package com.example.lab2.task;
 
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,5 +67,15 @@ public class TaskRestController {
         TaskPageDto result = new TaskPageDto(content,page, size, totalElements, totalPages);
 
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping(consumes = "application/json")
+    public ResponseEntity<Void> create(@Valid @RequestBody TaskRequest request) {
+        Task task = request.toTask();
+        taskService.createTask(task);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 }
