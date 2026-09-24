@@ -41,4 +41,15 @@ public record TaskRequest(
 
         return task;
     }
+
+    public static TaskRequest from(Task task) {
+        return new TaskRequest(
+                task.getTitle(),
+                task.getDescription(),
+                task.getPriority(),
+                task.isCompleted(),
+                task.getDate(),
+                RecursiveType.fromValue(task.getRecursiveType())
+        );
+    }
 }

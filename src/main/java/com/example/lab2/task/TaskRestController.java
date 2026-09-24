@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Comparator;
 import java.util.List;
@@ -13,9 +14,11 @@ import java.util.List;
 public class TaskRestController {
 
     private final TaskService taskService;
+    private final TaskPatchService taskPatchService;
 
-    public TaskRestController(TaskService taskService) {
+    public TaskRestController(TaskService taskService, TaskPatchService taskPatchService) {
         this.taskService = taskService;
+        this.taskPatchService = taskPatchService;
     }
 
     @GetMapping("/{id}")
@@ -89,6 +92,13 @@ public class TaskRestController {
         taskService.updateTask(task);
 
         return ResponseEntity.ok(TaskDto.from(task));
+    }
+
+    @PatchMapping(value = "/{id}", consumes = "application/merge-patch+json")
+    public ResponseEntity<TaskDto> patch(@PathVariable Long id, @RequestBody JsonNode patch) {
+        Task updated = taskPatchService.patch(id, patch);
+
+        return ResponseEntity.ok(TaskDto.from(updated));
     }
 
     @DeleteMapping("/{id}")
