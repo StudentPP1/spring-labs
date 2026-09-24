@@ -69,4 +69,18 @@ public class TaskApiExceptionHandler {
                 .badRequest()
                 .body(problem);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected server error occurred"
+        );
+
+        problem.setTitle("Internal server error");
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(problem);
+    }
 }

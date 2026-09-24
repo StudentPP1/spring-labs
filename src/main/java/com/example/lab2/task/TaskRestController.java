@@ -39,7 +39,9 @@ public class TaskRestController {
                 || size > 100
                 || (priority != null
                 && (priority < 1 || priority > 3))) {
-            return ResponseEntity.badRequest().build();
+            throw new IllegalArgumentException(
+                    "Invalid pagination or filter parameters"
+            );
         }
 
         List<Task> tasks = taskService
