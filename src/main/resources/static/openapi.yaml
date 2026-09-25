@@ -1,0 +1,551 @@
+openapi: 3.0.3
+
+info:
+  title: Tasks REST API
+  version: 1.0.0
+  description: |
+    REST API для керування завданнями.
+
+    API підтримує повний CRUD, фільтрацію, пагінацію
+    та часткове оновлення за JSON Merge Patch (RFC 7386).
+
+    Thymeleaf-фронтенд і REST API використовують спільні
+    TaskService, TaskRepository та базу даних PostgreSQL.
+
+servers:
+  - url: http://localhost:8080
+    description: Локальний сервер
+
+tags:
+  - name: Tasks
+    description: Операції із завданнями
+
+paths:
+  /api/tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Отримати список завдань
+      description: |
+        Повертає сторінку завдань.
+
+        Результат можна фільтрувати за пріоритетом і станом
+        виконання. Фільтри застосовуються разом.
+
+        Нумерація сторінок починається з нуля. Якщо номер
+        сторінки перевищує кількість доступних сторінок,
+        повертається порожній масив content зі статусом 200.
+      operationId: getTasks
+      parameters:
+        - name: priority
+          in: query
+          required: false
+          description: Фільтр за пріоритетом від 1 до 3.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+
+        - name: completed
+          in: query
+          required: false
+          description: Фільтр за станом виконання.
+          schema:
+            type: boolean
+
+        - name: page
+          in: query
+          required: false
+          description: Номер сторінки, починаючи з 0.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+
+        - name: size
+          in: query
+          required: false
+          description: Кількість завдань на сторінці.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+
+      responses:
+        '200':
+          description: Сторінку завдань успішно отримано.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskPage'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '406':
+          description: |
+            Формат, указаний у заголовку Accept,
+            не підтримується.
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Tasks
+      summary: Створити завдання
+      description: |
+        Створює нове завдання.
+
+        Ідентифікатор генерується базою даних. У разі
+        успішного створення повертається статус 201
+        без тіла відповіді.
+      operationId: createTask
+      requestBody:
+        required: true
+        description: Дані нового завдання.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequest'
+            example:
+              title: Виконати лабораторну роботу
+              description: Реалізувати REST API
+              priority: 3
+              completed: false
+              date: '2026-09-24'
+              recursiveType: NONE
+
+      responses:
+        '201':
+          description: Завдання успішно створено.
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Унікальний ідентифікатор завдання.
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+
+    get:
+      tags:
+        - Tasks
+      summary: Отримати завдання за ID
+      description: |
+        Повертає одне завдання за його ідентифікатором.
+
+        Якщо завдання з указаним ID не існує,
+        повертається статус 404.
+      operationId: getTaskById
+      responses:
+        '200':
+          description: Завдання знайдено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '406':
+          description: Запитаний формат відповіді не підтримується.
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Tasks
+      summary: Повністю оновити завдання
+      description: |
+        Повністю замінює дані існуючого завдання.
+
+        У тілі потрібно передати всі обов'язкові поля.
+        Ідентифікатор із URL зберігається і не може бути
+        змінений через тіло запиту.
+
+        Якщо завдання не існує, новий ресурс не створюється:
+        повертається статус 404.
+      operationId: updateTask
+      requestBody:
+        required: true
+        description: Повний новий стан завдання.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequest'
+            example:
+              title: Оновлена лабораторна робота
+              description: Перевірити всі запити в Postman
+              priority: 2
+              completed: true
+              date: '2026-09-25'
+              recursiveType: WEEK
+
+      responses:
+        '200':
+          description: Завдання успішно оновлено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '406':
+          description: Запитаний формат відповіді не підтримується.
+
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags:
+        - Tasks
+      summary: Частково оновити завдання
+      description: |
+        Частково оновлює завдання відповідно до RFC 7386
+        JSON Merge Patch.
+
+        Поля, яких немає в запиті, залишаються незмінними.
+        Значення null видаляє поле. Поле description можна
+        очистити за допомогою null.
+
+        Видалення обов'язкових полів, передавання невідомих
+        полів або спроба змінити id повертають статус 400.
+
+        Для запиту обов'язково потрібно використовувати
+        Content-Type application/merge-patch+json.
+      operationId: patchTask
+      requestBody:
+        required: true
+        description: Поля, які потрібно змінити.
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/TaskPatch'
+            example:
+              completed: true
+              description: null
+
+      responses:
+        '200':
+          description: Завдання успішно оновлено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '406':
+          description: Запитаний формат відповіді не підтримується.
+
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Tasks
+      summary: Видалити завдання
+      description: |
+        Видаляє існуюче завдання.
+
+        Успішна відповідь має статус 204 і не містить тіла.
+        Повторне видалення того самого ресурсу повертає 404.
+      operationId: deleteTask
+      responses:
+        '204':
+          description: Завдання успішно видалено.
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+        '405':
+          description: HTTP-метод не підтримується.
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    TaskRequest:
+      type: object
+      description: Дані для створення або повної заміни завдання.
+      required:
+        - title
+        - priority
+        - completed
+        - date
+        - recursiveType
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Назва завдання.
+          example: Виконати лабораторну роботу
+
+        description:
+          type: string
+          nullable: true
+          description: Необов'язковий опис завдання.
+          example: Реалізувати REST API
+
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: Пріоритет від 1 до 3.
+          example: 2
+
+        completed:
+          type: boolean
+          description: Ознака виконання завдання.
+          example: false
+
+        date:
+          type: string
+          format: date
+          description: Дата у форматі YYYY-MM-DD.
+          example: '2026-09-24'
+
+        recursiveType:
+          type: string
+          description: Тип повторення завдання.
+          enum:
+            - NONE
+            - DAY
+            - WEEK
+          example: NONE
+
+    TaskResponse:
+      type: object
+      description: Представлення завдання у відповіді API.
+      required:
+        - id
+        - priority
+        - title
+        - completed
+        - date
+        - recursiveType
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          description: Ідентифікатор завдання.
+          example: 3
+
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: Пріоритет завдання.
+          example: 2
+
+        title:
+          type: string
+          description: Назва завдання.
+          example: Виконати лабораторну роботу
+
+        description:
+          type: string
+          nullable: true
+          description: Опис завдання.
+          example: Реалізувати REST API
+
+        completed:
+          type: boolean
+          description: Ознака виконання.
+          example: false
+
+        date:
+          type: string
+          format: date
+          description: Дата завдання.
+          example: '2026-09-24'
+
+        recursiveType:
+          type: integer
+          description: |
+            Числове значення типу повторення:
+            -1 — NONE, 1 — DAY, 2 — WEEK.
+          enum:
+            - -1
+            - 1
+            - 2
+          example: -1
+
+    TaskPatch:
+      type: object
+      description: |
+        JSON Merge Patch. Усі поля необов'язкові.
+        Пропущені поля не змінюються.
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Нова назва. null призведе до помилки 400.
+
+        description:
+          type: string
+          nullable: true
+          description: Новий опис. null очищає опис.
+
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: Новий пріоритет.
+
+        completed:
+          type: boolean
+          description: Новий стан виконання.
+
+        date:
+          type: string
+          format: date
+          description: Нова дата.
+
+        recursiveType:
+          type: string
+          enum:
+            - NONE
+            - DAY
+            - WEEK
+          description: Новий тип повторення.
+
+    TaskPage:
+      type: object
+      description: Сторінка завдань після застосування фільтрів.
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+      properties:
+        content:
+          type: array
+          description: Завдання поточної сторінки.
+          items:
+            $ref: '#/components/schemas/TaskResponse'
+
+        page:
+          type: integer
+          minimum: 0
+          description: Номер поточної сторінки.
+          example: 0
+
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Максимальний розмір сторінки.
+          example: 10
+
+        totalElements:
+          type: integer
+          format: int64
+          description: Загальна кількість завдань після фільтрації.
+          example: 15
+
+        totalPages:
+          type: integer
+          description: Загальна кількість сторінок.
+          example: 2
+
+    Problem:
+      type: object
+      description: Стандартна JSON-відповідь із відомостями про помилку.
+      properties:
+        type:
+          type: string
+          description: Тип проблеми.
+          example: about:blank
+
+        title:
+          type: string
+          description: Коротка назва помилки.
+          example: Validation failed
+
+        status:
+          type: integer
+          description: HTTP-код помилки.
+          example: 400
+
+        detail:
+          type: string
+          description: Детальний опис причини.
+          example: priority must be between 1 and 3
+
+        instance:
+          type: string
+          description: Адреса запиту, який спричинив помилку.
+          example: /api/tasks
+
+  responses:
+    BadRequest:
+      description: Запит містить некоректні параметри або дані.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    NotFound:
+      description: Завдання з указаним ID не знайдено.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    UnsupportedMediaType:
+      description: Значення Content-Type не підтримується.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+    InternalServerError:
+      description: Непередбачена внутрішня помилка сервера.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
