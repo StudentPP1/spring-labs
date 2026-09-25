@@ -401,15 +401,13 @@ components:
           example: '2026-09-24'
 
         recursiveType:
-          type: integer
-          description: |
-            Числове значення типу повторення:
-            -1 — NONE, 1 — DAY, 2 — WEEK.
+          type: string
+          description: Тип повторення завдання.
           enum:
-            - -1
-            - 1
-            - 2
-          example: -1
+            - NONE
+            - DAY
+            - WEEK
+          example: NONE
 
     TaskPatch:
       type: object

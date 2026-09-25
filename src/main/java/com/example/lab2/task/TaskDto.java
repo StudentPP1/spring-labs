@@ -9,7 +9,7 @@ public record TaskDto(
         String description,
         boolean completed,
         LocalDate date,
-        int recursiveType
+        RecursiveType recursiveType
 ) {
 
     public static TaskDto from(Task task) {
@@ -20,7 +20,9 @@ public record TaskDto(
                 task.getDescription(),
                 task.isCompleted(),
                 task.getDate(),
-                task.getRecursiveType()
+                RecursiveType.fromValue(
+                        task.getRecursiveType()
+                )
         );
     }
 }
