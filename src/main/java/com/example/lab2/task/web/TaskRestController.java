@@ -1,5 +1,11 @@
-package com.example.lab2.task;
+package com.example.lab2.task.web;
 
+import com.example.lab2.task.Task;
+import com.example.lab2.task.TaskPatchService;
+import com.example.lab2.task.TaskService;
+import com.example.lab2.task.dto.TaskDto;
+import com.example.lab2.task.dto.TaskPageDto;
+import com.example.lab2.task.dto.TaskRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

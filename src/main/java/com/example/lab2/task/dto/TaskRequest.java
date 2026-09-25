@@ -1,5 +1,7 @@
-package com.example.lab2.task;
+package com.example.lab2.task.dto;
 
+import com.example.lab2.task.RecursiveType;
+import com.example.lab2.task.Task;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

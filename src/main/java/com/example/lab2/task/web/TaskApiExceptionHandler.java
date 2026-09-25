@@ -1,5 +1,6 @@
-package com.example.lab2.task;
+package com.example.lab2.task.web;
 
+import com.example.lab2.task.TaskNotFoundException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

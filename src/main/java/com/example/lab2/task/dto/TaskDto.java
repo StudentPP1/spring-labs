@@ -1,4 +1,7 @@
-package com.example.lab2.task;
+package com.example.lab2.task.dto;
+
+import com.example.lab2.task.RecursiveType;
+import com.example.lab2.task.Task;
 
 import java.time.LocalDate;
 
