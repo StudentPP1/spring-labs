@@ -1,7 +1,6 @@
 package com.example.lab2.task;
 
 import com.example.lab2.task.dto.TaskRequest;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +9,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskPatchService {
@@ -73,7 +73,16 @@ public class TaskPatchService {
         var violations = validator.validate(request);
 
         if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
+            String message = violations
+                    .stream()
+                    .map(violation ->
+                            violation.getPropertyPath()
+                                    + ": "
+                                    + violation.getMessage()
+                    )
+                    .collect(Collectors.joining(", "));
+
+            throw new IllegalArgumentException(message);
         }
 
         Task updated = request.toTask();
