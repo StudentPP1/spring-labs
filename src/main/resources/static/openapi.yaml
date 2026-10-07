@@ -84,9 +84,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
 
         '406':
-          description: |
-            Формат, указаний у заголовку Accept,
-            не підтримується.
+          $ref: '#/components/responses/NotAcceptable'
 
         '500':
           $ref: '#/components/responses/InternalServerError'
@@ -166,7 +164,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
         '406':
-          description: Запитаний формат відповіді не підтримується.
+          $ref: '#/components/responses/NotAcceptable'
 
         '500':
           $ref: '#/components/responses/InternalServerError'
@@ -215,7 +213,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
         '406':
-          description: Запитаний формат відповіді не підтримується.
+          $ref: '#/components/responses/NotAcceptable'
 
         '415':
           $ref: '#/components/responses/UnsupportedMediaType'
@@ -267,7 +265,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
         '406':
-          description: Запитаний формат відповіді не підтримується.
+          $ref: '#/components/responses/NotAcceptable'
 
         '415':
           $ref: '#/components/responses/UnsupportedMediaType'
@@ -296,7 +294,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
         '405':
-          description: HTTP-метод не підтримується.
+          $ref: '#/components/responses/MethodNotAllowed'
 
         '500':
           $ref: '#/components/responses/InternalServerError'
@@ -526,6 +524,12 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Invalid request
+            status: 400
+            detail: Request contains invalid data
+            instance: /api/tasks/3
 
     NotFound:
       description: Завдання з указаним ID не знайдено.
@@ -533,6 +537,38 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Task not found
+            status: 404
+            detail: Task with id 999 not found
+            instance: /api/tasks/999
+
+    MethodNotAllowed:
+      description: HTTP-метод не підтримується для цього ресурсу.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Method not allowed
+            status: 405
+            detail: HTTP method is not supported
+            instance: /api/tasks/3
+
+    NotAcceptable:
+      description: Формат, указаний у заголовку Accept, не підтримується.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Not acceptable
+            status: 406
+            detail: Requested response format is not supported
+            instance: /api/tasks
 
     UnsupportedMediaType:
       description: Значення Content-Type не підтримується.
@@ -540,6 +576,12 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unsupported media type
+            status: 415
+            detail: Content-Type is not supported
+            instance: /api/tasks/3
 
     InternalServerError:
       description: Непередбачена внутрішня помилка сервера.
@@ -547,3 +589,9 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Internal server error
+            status: 500
+            detail: An unexpected server error occurred
+            instance: /api/tasks
