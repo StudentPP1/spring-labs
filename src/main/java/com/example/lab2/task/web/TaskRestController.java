@@ -10,8 +10,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tools.jackson.databind.JsonNode;
 
+import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,11 +45,8 @@ public class TaskRestController {
         if (page < 0
                 || size < 1
                 || size > 100
-                || (priority != null
-                && (priority < 1 || priority > 3))) {
-            throw new IllegalArgumentException(
-                    "Invalid pagination or filter parameters"
-            );
+                || (priority != null && (priority < 1 || priority > 3))) {
+            throw new IllegalArgumentException("Invalid pagination or filter parameters");
         }
 
         List<Task> tasks = taskService
@@ -58,11 +57,7 @@ public class TaskRestController {
 
         int totalElements = tasks.size();
         long offset = (long) page * size;
-
-        int fromIndex = offset >= totalElements
-                ? totalElements
-                : (int) offset;
-
+        int fromIndex = offset >= totalElements ? totalElements : (int) offset;
         int toIndex = Math.min(fromIndex + size, totalElements);
 
         List<TaskDto> content = tasks
@@ -71,49 +66,66 @@ public class TaskRestController {
                 .map(TaskDto::from)
                 .toList();
 
-        int totalPages = totalElements == 0
-                ? 0
-                : (totalElements + size - 1) / size;
+        int totalPages = totalElements == 0 ? 0 : (totalElements + size - 1) / size;
 
-        TaskPageDto result = new TaskPageDto(content,page, size, totalElements, totalPages);
-
+        TaskPageDto result = new TaskPageDto(content, page, size, totalElements, totalPages);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping(consumes = "application/json")
-    public ResponseEntity<Void> create(@Valid @RequestBody TaskRequest request) {
+    public ResponseEntity<TaskDto> create(@Valid @RequestBody TaskRequest request) {
         Task task = request.toTask();
-        taskService.createTask(task);
+        Long id = taskService.createTask(task);
+
+        Task created = taskService.getTaskById(id);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
+                .created(location)
+                .body(TaskDto.from(created));
     }
 
     @PutMapping(value = "/{id}", consumes = "application/json")
     public ResponseEntity<TaskDto> update(@PathVariable Long id, @Valid @RequestBody TaskRequest request) {
         taskService.getTaskById(id);
-
         Task task = request.toTask();
         task.setId(id);
-
         taskService.updateTask(task);
-
         return ResponseEntity.ok(TaskDto.from(task));
     }
 
     @PatchMapping(value = "/{id}", consumes = "application/merge-patch+json")
     public ResponseEntity<TaskDto> patch(@PathVariable Long id, @RequestBody JsonNode patch) {
         Task updated = taskPatchService.patch(id, patch);
-
         return ResponseEntity.ok(TaskDto.from(updated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        taskService.getTaskById(id);
         taskService.deleteTask(id);
-
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> complete(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean forceError) {
+        if (forceError) {
+            taskService.markAsCompletedWithPossibleError(id, true);
+        } else {
+            taskService.markAsCompleted(id);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public List<TaskDto> searchByTitle(@RequestParam String title) {
+        return taskService.searchByTitle(title).stream()
+                .map(TaskDto::from)
+                .toList();
     }
 }

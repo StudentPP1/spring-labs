@@ -21,6 +21,38 @@ tags:
     description: Операції із завданнями
 
 paths:
+  /api/tasks/search:
+    get:
+      tags:
+        - Tasks
+      summary: Пошук завдань за назвою
+      description: |
+        Шукає завдання, у назві яких міститься вказаний фрагмент тексту
+        (регістр не враховується).
+      operationId: searchTasksByTitle
+      parameters:
+        - name: title
+          in: query
+          required: true
+          description: Фрагмент назви для пошуку.
+          schema:
+            type: string
+            minLength: 1
+          example: Нова
+      responses:
+        "200":
+          description: Список знайдених завдань.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/tasks:
     get:
       tags:
@@ -73,21 +105,21 @@ paths:
             default: 10
 
       responses:
-        '200':
+        "200":
           description: Сторінку завдань успішно отримано.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskPage'
+                $ref: "#/components/schemas/TaskPage"
 
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-        '406':
-          $ref: '#/components/responses/NotAcceptable'
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
 
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     post:
       tags:
@@ -106,27 +138,27 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskRequest'
+              $ref: "#/components/schemas/TaskRequest"
             example:
               title: Виконати лабораторну роботу
               description: Реалізувати REST API
               priority: 3
               completed: false
-              date: '2026-09-24'
+              date: "2026-09-24"
               recursiveType: NONE
 
       responses:
-        '201':
+        "201":
           description: Завдання успішно створено.
 
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-        '415':
-          $ref: '#/components/responses/UnsupportedMediaType'
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
 
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/tasks/{id}:
     parameters:
@@ -150,24 +182,24 @@ paths:
         повертається статус 404.
       operationId: getTaskById
       responses:
-        '200':
+        "200":
           description: Завдання знайдено.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
+                $ref: "#/components/schemas/TaskResponse"
 
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-        '406':
-          $ref: '#/components/responses/NotAcceptable'
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
 
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     put:
       tags:
@@ -189,37 +221,37 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskRequest'
+              $ref: "#/components/schemas/TaskRequest"
             example:
               title: Оновлена лабораторна робота
               description: Перевірити всі запити в Postman
               priority: 2
               completed: true
-              date: '2026-09-25'
+              date: "2026-09-25"
               recursiveType: WEEK
 
       responses:
-        '200':
+        "200":
           description: Завдання успішно оновлено.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
+                $ref: "#/components/schemas/TaskResponse"
 
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-        '406':
-          $ref: '#/components/responses/NotAcceptable'
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
 
-        '415':
-          $ref: '#/components/responses/UnsupportedMediaType'
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
 
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     patch:
       tags:
@@ -245,33 +277,33 @@ paths:
         content:
           application/merge-patch+json:
             schema:
-              $ref: '#/components/schemas/TaskPatch'
+              $ref: "#/components/schemas/TaskPatch"
             example:
               completed: true
               description: null
 
       responses:
-        '200':
+        "200":
           description: Завдання успішно оновлено.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
+                $ref: "#/components/schemas/TaskResponse"
 
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-        '406':
-          $ref: '#/components/responses/NotAcceptable'
+        "406":
+          $ref: "#/components/responses/NotAcceptable"
 
-        '415':
-          $ref: '#/components/responses/UnsupportedMediaType'
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
 
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     delete:
       tags:
@@ -284,20 +316,61 @@ paths:
         Повторне видалення того самого ресурсу повертає 404.
       operationId: deleteTask
       responses:
-        '204':
+        "204":
           description: Завдання успішно видалено.
 
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-        '405':
-          $ref: '#/components/responses/MethodNotAllowed'
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
 
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/tasks/{id}/complete:
+    post:
+      tags:
+        - Tasks
+      summary: Позначити завдання виконаним (транзакційно)
+      description: |
+        Позначає завдання як виконане.
+        Якщо завдання повторюване (DAY або WEEK) — автоматично
+        створюється наступний екземпляр.
+        Усі зміни виконуються в одній транзакції.
+
+        Параметр forceError=true навмисно кидає виняток після
+        оновлення, щоб продемонструвати rollback транзакції.
+      operationId: completeTask
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Ідентифікатор завдання.
+          schema:
+            type: integer
+            format: int64
+        - name: forceError
+          in: query
+          required: false
+          description: |
+            Якщо true — після оновлення кидається виняток
+            для демонстрації відкату транзакції.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "204":
+          description: Завдання успішно позначено виконаним.
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          description: |
+            Внутрішня помилка або навмисний rollback
+            (коли forceError=true).
 
 components:
   schemas:
@@ -340,7 +413,7 @@ components:
           type: string
           format: date
           description: Дата у форматі YYYY-MM-DD.
-          example: '2026-09-24'
+          example: "2026-09-24"
 
         recursiveType:
           type: string
@@ -396,7 +469,7 @@ components:
           type: string
           format: date
           description: Дата завдання.
-          example: '2026-09-24'
+          example: "2026-09-24"
 
         recursiveType:
           type: string
@@ -462,7 +535,7 @@ components:
           type: array
           description: Завдання поточної сторінки.
           items:
-            $ref: '#/components/schemas/TaskResponse'
+            $ref: "#/components/schemas/TaskResponse"
 
         page:
           type: integer
@@ -523,7 +596,7 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
           example:
             type: about:blank
             title: Invalid request
@@ -536,7 +609,7 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
           example:
             type: about:blank
             title: Task not found
@@ -549,7 +622,7 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
           example:
             type: about:blank
             title: Method not allowed
@@ -562,7 +635,7 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
           example:
             type: about:blank
             title: Not acceptable
@@ -575,7 +648,7 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
           example:
             type: about:blank
             title: Unsupported media type
@@ -588,7 +661,7 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
           example:
             type: about:blank
             title: Internal server error
